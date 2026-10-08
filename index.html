@@ -46,6 +46,17 @@
     <p>🍔 Burgers · 🌮 Tacos · 🍕 Pizza · 🥪 Sandwichs</p>
     <button class="outline" id="openSnack">Voir le menu et les prix</button>
   </div>
+</section><section class="restaurant-card" id="napolitanoCard">
+  <button class="restaurant-logo" id="napolitanoLogo">
+    <img src="napolitano.png" alt="Napolitano">
+    <span>Ouvrir le menu</span>
+  </button>
+
+  <div class="restaurant-info">
+    <h2>Napolitano</h2>
+    <p>🍕 Pizzas · 🍔 Burgers · 🍝 Pasta · 🥗 Insalata</p>
+    <button class="outline" id="openNapolitano">Voir le menu et les prix</button>
+  </div>
 </section>
   <section class="how">
     <div><b>1</b><span>Choisissez</span><small>vos plats</small></div>
@@ -211,7 +222,111 @@ function renderSnackMenu(cat="Tous"){
     </article>`;
   }).join('');
 }
+// ===== Napolitano =====
+const NAPOLITANO_MENU = [
 
+  // Pizzas Rossa
+  {name:"4 Fromaggi",category:"Pizzas Rossa",price:55},
+  {name:"Compionne",category:"Pizzas Rossa",price:65},
+  {name:"Fruit de Mer",category:"Pizzas Rossa",price:60},
+  {name:"Diavola",category:"Pizzas Rossa",price:65},
+
+  // Pizzas Bianca
+  {name:"Alfredo",category:"Pizzas Bianca",price:50},
+  {name:"Napolitano",category:"Pizzas Bianca",price:65},
+  {name:"Coppa al Miele",category:"Pizzas Bianca",price:65},
+  {name:"Salmone",category:"Pizzas Bianca",price:70},
+
+  // Burgers Focaccia
+  {name:"Pollo",category:"Burgers Focaccia",price:55},
+  {name:"Fungo",category:"Burgers Focaccia",price:65},
+  {name:"Pancetta",category:"Burgers Focaccia",price:60},
+
+  // Pasta
+  {name:"Bolognese",category:"Pasta",price:65},
+  {name:"Salmone",category:"Pasta",price:65},
+  {name:"Alfredo",category:"Pasta",price:55},
+  {name:"Carbonara",category:"Pasta",price:65},
+
+  // Accompagnements
+  {name:"Frites",category:"Accompagnements",price:10},
+  {name:"Insalata Mixta",category:"Accompagnements",price:15},
+  {name:"Pasta del Formaggi",category:"Accompagnements",price:15},
+
+  // Desserts Maison
+  {name:"Panna Cotta Framboise",category:"Desserts Maison",price:25},
+  {name:"Panna Cotta Mangue - Passion",category:"Desserts Maison",price:25},
+  {name:"Tiramisu",category:"Desserts Maison",price:25}
+
+];
+
+;
+function renderNapolitanoMenu(cat="Tous"){
+  const data = cat==="Tous"
+    ? NAPOLITANO_MENU
+    : NAPOLITANO_MENU.filter(x=>x.category===cat);
+
+  $('menuGrid').innerHTML = data.map(x=>{
+    const q = cart.find(y=>y.name===x.name)?.qty || 0;
+
+    return `<article class="item">
+      <div>
+        <small>${x.category}</small>
+        <h3>${x.name}</h3>
+      </div>
+      <strong>${x.price} DH</strong>
+      <button onclick="addNapolitano('${x.name.replace(/'/g,"\\'")}')">
+        ${q ? q+" × Ajouter" : "Ajouter"}
+      </button>
+    </article>`;
+  }).join('');
+}
+
+function renderNapolitanoFilters(){
+  const cats = ['Tous', ...new Set(NAPOLITANO_MENU.map(x=>x.category))];
+
+  $('filters').innerHTML = cats.map((c,i)=>
+    `<button class="filter ${i===0?'active':''}" data-cat="${c}">${c}</button>`
+  ).join('');
+
+  document.querySelectorAll('.filter').forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('.filter')
+        .forEach(x=>x.classList.remove('active'));
+
+      b.classList.add('active');
+      renderNapolitanoMenu(b.dataset.cat);
+    };
+  });
+}
+
+function addNapolitano(name){
+  const item = NAPOLITANO_MENU.find(x=>x.name===name);
+  if(!item)return;
+
+  const found = cart.find(x=>x.name===name);
+
+  if(found) found.qty++;
+  else cart.push({...item,qty:1});
+
+  save();
+  renderNapolitanoMenu(
+    document.querySelector('.filter.active')?.dataset.cat || 'Tous'
+  );
+  renderCart();
+}
+
+function openNapolitanoMenu(){
+  $('menuModal').querySelector('h2').textContent='Napolitano';
+  $('menuModal').querySelector('.modal-head p').textContent='Choisissez vos plats';
+  $('menuModal').querySelector('.menu-gallery').style.display='none';
+
+  renderNapolitanoFilters();
+  renderNapolitanoMenu();
+
+  $('menuModal').classList.add('show');
+  $('menuModal').setAttribute('aria-hidden','false');
+                                    }
 function renderSnackFilters(){
   const cats = ['Tous', ...new Set(SNACK_MENU.map(x=>x.category))];
 
