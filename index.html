@@ -125,6 +125,205 @@ $('sendOrder').onclick=()=>{
   window.open(`https://wa.me/${WHATSAPP}?text=${msg}`,'_blank');
 };
 renderCart();
-</script>
+// ===== Snack Biggest =====
+const SNACK_MENU = [
+  {name:"Panzerotti Classic",category:"Panzerotti",price:45},
+  {name:"Panzerotti Crosty",category:"Panzerotti",price:45},
+
+  {name:"Pizza Margarita",category:"Pizza",price:35},
+  {name:"Pizza Kefta",category:"Pizza",price:50},
+  {name:"Pizza 4 Saisons",category:"Pizza",price:60},
+  {name:"Pizza 4 Fromages",category:"Pizza",price:48},
+  {name:"Pizza Fruit de Mer",category:"Pizza",price:60},
+  {name:"Pizza Thon",category:"Pizza",price:48},
+  {name:"Pizza Big-Bang",category:"Pizza",price:60},
+
+  {name:"Burger Crispy",category:"Burgers",price:35},
+  {name:"Burger Big Boss",category:"Burgers",price:40},
+  {name:"Burger Classic",category:"Burgers",price:38},
+
+  {name:"Smash Classic X1",category:"Smash",price:33},
+  {name:"Smash Classic X2",category:"Smash",price:40},
+  {name:"Smash Prime X1",category:"Smash",price:35},
+  {name:"Smash Prime X2",category:"Smash",price:45},
+  {name:"Smash Mega Cheese X1",category:"Smash",price:35},
+  {name:"Smash Mega Cheese X2",category:"Smash",price:45},
+
+  {name:"Tacos Big Mix",category:"Tacos",price:47},
+  {name:"Tacos Chicken Curry",category:"Tacos",price:30},
+  {name:"Tacos Dinde Kebab",category:"Tacos",price:30},
+  {name:"Tacos Kefta",category:"Tacos",price:37},
+  {name:"Tacos Nuggets",category:"Tacos",price:30},
+  {name:"Tacos Cordon Bleu",category:"Tacos",price:30},
+  {name:"Tacos Chicken Crispy",category:"Tacos",price:35},
+
+  {name:"Sandwich Chicken Curry",category:"Sandwichs",price:25},
+  {name:"Sandwich Four X",category:"Sandwichs",price:37},
+  {name:"Sandwich Kebab",category:"Sandwichs",price:25},
+  {name:"Sandwich Edge",category:"Sandwichs",price:37},
+  {name:"Sandwich Crosty",category:"Sandwichs",price:35},
+
+  {name:"Frites",category:"Accompagnements",price:7},
+  {name:"Pepsi 25 cl",category:"Boissons",price:7},
+  {name:"Pepsi 33 cl",category:"Boissons",price:10},
+  {name:"Potatoes",category:"Accompagnements",price:10},
+
+  {name:"Mozzarella",category:"Suppléments",price:10},
+  {name:"Cheddar",category:"Suppléments",price:3},
+  {name:"Gratiné",category:"Suppléments",price:5},
+  {name:"Jambon",category:"Suppléments",price:5},
+  {name:"Cordon Bleu",category:"Suppléments",price:15},
+  {name:"Extra",category:"Suppléments",price:20},
+
+  {name:"Tenders 4 pcs",category:"Tenders",price:30},
+  {name:"Tenders 8 pcs",category:"Tenders",price:55},
+  {name:"Nuggets 4 pcs",category:"Nuggets",price:20},
+  {name:"Nuggets 8 pcs",category:"Nuggets",price:35}
+];
+
+const oldOpenMenu = openMenu;
+
+function renderSnackMenu(cat="Tous"){
+  const data = cat==="Tous" ? SNACK_MENU : SNACK_MENU.filter(x=>x.category===cat);
+
+  $('menuGrid').innerHTML = data.map(x=>{
+    const q = cart.find(y=>y.name===x.name)?.qty || 0;
+    return `<article class="item">
+      <div>
+        <small>${x.category}</small>
+        <h3>${x.name}</h3>
+      </div>
+      <strong>${x.price} DH</strong>
+      <button onclick="addSnack('${x.name.replace(/'/g,"\\'")}')">
+        ${q ? q+" × Ajouter" : "Ajouter"}
+      </button>
+    </article>`;
+  }).join('');
+}
+
+function renderSnackFilters(){
+  const cats = ['Tous', ...new Set(SNACK_MENU.map(x=>x.category))];
+
+  $('filters').innerHTML = cats.map((c,i)=>
+    `<button class="filter ${i===0?'active':''}" onclick="filterSnack('${c.replace(/'/g,"\\'")}',this)">${c}</button>`
+  ).join('');
+}
+
+function filterSnack(cat,btn){
+  document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));
+  btn.classList.add('active');
+  renderSnackMenu(cat);
+}
+
+function addSnack(name){
+  const item = SNACK_MENU.find(x=>x.name===name);
+  if(!item)return;
+
+  const found = cart.find(x=>x.name===name);
+
+  if(found) found.qty++;
+  else cart.push({...item,qty:1});
+
+  save();
+  renderSnackMenu();
+}
+
+const oldChange = change;
+
+change = function(name,delta){
+  if(SNACK_MENU.some(x=>x.name===name)){
+    const x=cart.find(y=>y.name===name);
+    if(!x)return;
+
+    x.qty += delta;
+    if(x.qty<=0) cart=cart.filter(y=>y.name!==name);
+
+    save();
+
+    if($('menuModal').classList.contains('show')){
+      renderSnackMenu();
+    }
+    return;
+  }
+
+  oldChange(name,delta);
+};
+
+const oldRenderCart = renderCart;
+
+renderCart = function(){
+  const count=cart.reduce((s,x)=>s+x.qty,0);
+  const total=cart.reduce((s,x)=>s+x.qty*x.price,0);
+
+  $('cartCount').textContent=count;
+  $('cartTotal').textContent=money(total);
+
+  $('cartItems').innerHTML=cart.length ? cart.map(x=>
+    `<div class="cart-row">
+      <div><b>${x.name}</b><small>${x.price} DH × ${x.qty}</small></div>
+      <div>
+        <button onclick="change('${x.name.replace(/'/g,"\\'")}',-1)">−</button>
+        <b>${x.qty}</b>
+        <button onclick="change('${x.name.replace(/'/g,"\\'")}',1)">+</button>
+      </div>
+    </div>`
+  ).join('') : '<p>Votre panier est vide.</p>';
+};
+
+const oldSendOrder = $('sendOrder').onclick;
+
+$('sendOrder').onclick = function(){
+  if(!cart.length)return alert('Votre panier est vide.');
+
+  const total=cart.reduce((s,x)=>s+x.qty*x.price,0);
+
+  const lines=cart.map(x=>
+    `• ${x.name} x${x.qty} = ${x.qty*x.price} DH`
+  ).join('%0A');
+
+  const hasSnack=cart.some(x=>SNACK_MENU.some(y=>y.name===x.name));
+  const restaurant=hasSnack ? 'Snack Biggest' : 'Yami Yami Sushi';
+
+  const msg=`Bonjour Blink 👋%0AJe souhaite commander chez ${restaurant}.%0A%0A${lines}%0A%0ATotal: ${total} DH`;
+
+  window.open(`https://wa.me/${WHATSAPP}?text=${msg}`,'_blank');
+};
+
+const oldOpenYami = openMenu;
+
+openMenu = function(){
+  $('menuModal').querySelector('h2').textContent='Yami Yami Sushi';
+  $('menuModal').querySelector('.modal-head p').textContent='Choisissez vos plats';
+  $('menuModal').querySelector('.menu-gallery').style.display='block';
+
+  oldOpenYami();
+  renderFilters();
+  renderMenu();
+};
+
+function openSnackMenu(){
+  $('menuModal').querySelector('h2').textContent='Snack Biggest';
+  $('menuModal').querySelector('.modal-head p').textContent='Choisissez vos plats';
+
+  $('menuModal').querySelector('.menu-gallery').style.display='block';
+
+  $('menuModal').querySelector('.gallery').innerHTML=`
+    <img src="Screenshot_20261008-010811.png" alt="Menu Snack Biggest 1">
+    <img src="Screenshot_20261008-010806.png" alt="Menu Snack Biggest 2">
+    <img src="Screenshot_20261008-010759.png" alt="Menu Snack Biggest 3">
+    <img src="Screenshot_20261008-010750.png" alt="Menu Snack Biggest 4">
+  `;
+
+  renderSnackFilters();
+  renderSnackMenu();
+
+  $('menuModal').classList.add('show');
+  $('menuModal').setAttribute('aria-hidden','false');
+}
+
+$('openSnack').onclick=openSnackMenu;
+$('snackLogo').onclick=openSnackMenu;
+
+renderCart();</script>
 </body>
 </html>
