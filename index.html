@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blink — Livraison</title>
+<meta name="theme-color" content="#0b0d0c">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-dot">B</span><span>blink</span></div>
+  <button class="cart-btn" id="cartBtn">🛒 <span>Panier</span><b id="cartCount">0</b></button>
+</header>
+
+<main>
+  <section class="hero">
+    <div>
+      <p class="eyebrow">LIVRAISON RAPIDE</p>
+      <h1>Commandez avec <span>Blink</span></h1>
+      <p>Choisissez votre restaurant, ajoutez vos plats au panier et envoyez la commande directement par WhatsApp.</p>
+      <button class="primary" id="openYami">🍣 Yami Yami Sushi — Voir le menu</button>
+    </div>
+    <div class="hero-card">⚡<strong>Blink</strong><small>Simple · Rapide · Local</small></div>
+  </section>
+
+  <section class="restaurant-card" id="restaurantCard">
+    <button class="restaurant-logo" id="restaurantLogo" aria-label="Ouvrir le menu Yami Yami Sushi">
+      <img src="assets/yami-yami-logo.png" alt="Yami Yami Sushi">
+      <span>Ouvrir le menu</span>
+    </button>
+    <div class="restaurant-info">
+      <h2>Yami Yami Sushi</h2>
+      <p>🍣 Sushi · Maki · California · Boxes · Bateaux</p>
+      <button class="outline" id="openYami2">Voir le menu et les prix</button>
+    </div>
+  </section>
+
+  <section class="how">
+    <div><b>1</b><span>Choisissez</span><small>vos plats</small></div>
+    <div><b>2</b><span>Vérifiez</span><small>le panier</small></div>
+    <div><b>3</b><span>Envoyez</span><small>sur WhatsApp</small></div>
+  </section>
+</main>
+
+<div class="modal" id="menuModal" aria-hidden="true">
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div><h2>Yami Yami Sushi</h2><p>Choisissez vos plats</p></div>
+      <button class="close" id="closeMenu">×</button>
+    </div>
+    <div class="filters" id="filters"></div>
+    <div class="menu-grid" id="menuGrid"></div>
+    <div class="menu-gallery">
+      <h3>Photos du menu</h3>
+      <div class="gallery">
+        <img src="assets/menu/menu-01.png" alt="Menu Yami Yami Sushi 1" loading="lazy"><img src="assets/menu/menu-02.png" alt="Menu Yami Yami Sushi 2" loading="lazy"><img src="assets/menu/menu-03.png" alt="Menu Yami Yami Sushi 3" loading="lazy"><img src="assets/menu/menu-04.png" alt="Menu Yami Yami Sushi 4" loading="lazy"><img src="assets/menu/menu-05.png" alt="Menu Yami Yami Sushi 5" loading="lazy"><img src="assets/menu/menu-06.png" alt="Menu Yami Yami Sushi 6" loading="lazy"><img src="assets/menu/menu-07.png" alt="Menu Yami Yami Sushi 7" loading="lazy"><img src="assets/menu/menu-08.png" alt="Menu Yami Yami Sushi 8" loading="lazy"><img src="assets/menu/menu-09.png" alt="Menu Yami Yami Sushi 9" loading="lazy"><img src="assets/menu/menu-10.png" alt="Menu Yami Yami Sushi 10" loading="lazy">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="drawer" id="cartDrawer" aria-hidden="true">
+  <div class="drawer-head"><h2>🛒 Votre panier</h2><button class="close" id="closeCart">×</button></div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="cart-footer">
+    <div class="total"><span>Total</span><strong><span id="cartTotal">0</span> DH</strong></div>
+    <button class="whatsapp" id="sendOrder">Envoyer la commande sur WhatsApp</button>
+    <p class="hint">Le message sera préparé avec les articles, quantités et total.</p>
+  </div>
+</div>
+<div class="backdrop" id="backdrop"></div>
+<script>
+const MENU = [{"name": "Maki concombre", "category": "Maki", "price": 15}, {"name": "Maki surimi", "category": "Maki", "price": 25}, {"name": "Maki avocat", "category": "Maki", "price": 25}, {"name": "Maki crevette", "category": "Maki", "price": 30}, {"name": "Maki saumon", "category": "Maki", "price": 35}, {"name": "Maki mangue", "category": "Maki", "price": 25}, {"name": "Maki cheese", "category": "Maki", "price": 25}, {"name": "Maki poulet", "category": "Maki", "price": 20}, {"name": "Fotomaki Saumon", "category": "Fotomakis", "price": 45}, {"name": "Fotomaki Crevette", "category": "Fotomakis", "price": 45}, {"name": "Fotomaki Végétarien", "category": "Fotomakis", "price": 35}, {"name": "Fotomaki Poulet", "category": "Fotomakis", "price": 35}, {"name": "Cream cheese", "category": "California rolls", "price": 40}, {"name": "Avocado roll", "category": "California rolls", "price": 45}, {"name": "Classique Roll", "category": "California rolls", "price": 30}, {"name": "Ebi fry", "category": "California rolls", "price": 40}, {"name": "Chaki yaki", "category": "California rolls", "price": 45}, {"name": "Yami crispy", "category": "California rolls", "price": 45}, {"name": "Crunchy Crevettes", "category": "California rolls", "price": 40}, {"name": "Fresh salmon", "category": "Fresh roll", "price": 55}, {"name": "Fresh Crevettes", "category": "Fresh roll", "price": 50}, {"name": "HirosHima", "category": "Nos spéciaux", "price": 55}, {"name": "Osaka", "category": "Nos spéciaux", "price": 55}, {"name": "Kyo", "category": "Nos spéciaux", "price": 55}, {"name": "Mong roll", "category": "Nos spéciaux", "price": 50}, {"name": "Spécial Yami", "category": "Nos spéciaux", "price": 65}, {"name": "Yami Yami", "category": "Nos spéciaux", "price": 60}, {"name": "Burrito poulet", "category": "Burritos", "price": 40}, {"name": "Burrito crevette", "category": "Burritos", "price": 55}, {"name": "Burrito saumon", "category": "Burritos", "price": 55}, {"name": "Aromaki Saumon", "category": "Aromakis", "price": 55}, {"name": "Aromaki Crevettes", "category": "Aromakis", "price": 55}, {"name": "Aromaki Poulet", "category": "Aromakis", "price": 50}, {"name": "Aromaki Yami Yami", "category": "Aromakis", "price": 65}, {"name": "Aromaki Chef", "category": "Aromakis", "price": 70}, {"name": "Aromaki Nouri", "category": "Aromakis", "price": 50}, {"name": "Slim roll Saumon", "category": "Slim rolls", "price": 55}, {"name": "Slim roll Crevette", "category": "Slim rolls", "price": 55}, {"name": "Slim roll Poulet", "category": "Slim rolls", "price": 50}, {"name": "Maki Crispy Crevette", "category": "Maki Crispy", "price": 35}, {"name": "Maki Crispy Saumon", "category": "Maki Crispy", "price": 35}, {"name": "Maki Crispy Surimi", "category": "Maki Crispy", "price": 25}, {"name": "Maki Crispy Poulet", "category": "Maki Crispy", "price": 30}, {"name": "Aromaki Bowl Saumon", "category": "Aromaki Bowl", "price": 55}, {"name": "Aromaki Bowl Poulet", "category": "Aromaki Bowl", "price": 50}, {"name": "Fry Ebi Fry", "category": "Sushi fry", "price": 40}, {"name": "Dragen Eye", "category": "Sushi fry", "price": 55}, {"name": "Casablanca", "category": "Sushi fry", "price": 40}, {"name": "Fry Saumon fry", "category": "Sushi fry", "price": 45}, {"name": "Aromaki boule", "category": "Sushi fry", "price": 50}, {"name": "Crunchy", "category": "Sushi fry", "price": 45}, {"name": "Pizza Lux", "category": "Pizza sushi", "price": 55}, {"name": "Pizza Royale", "category": "Pizza sushi", "price": 55}, {"name": "Pizza Mozzarella", "category": "Pizza sushi", "price": 55}, {"name": "Sashimi Saumon", "category": "Sashimi / Tataki", "price": 55}, {"name": "Tataki Saumon", "category": "Sashimi / Tataki", "price": 55}, {"name": "Tartare Saumon", "category": "Les Tartares", "price": 60}, {"name": "Tartare Crevettes", "category": "Les Tartares", "price": 55}, {"name": "Tartare Tropical", "category": "Les Tartares", "price": 55}, {"name": "Temaki Saumon Avocat", "category": "Temaki", "price": 50}, {"name": "Temaki Crevette Avocat", "category": "Temaki", "price": 40}, {"name": "Nigiri Saumon", "category": "Nigiri", "price": 30}, {"name": "Nigiri Saumon Brisé", "category": "Nigiri", "price": 30}, {"name": "Nigiri Crevette", "category": "Nigiri", "price": 25}, {"name": "Mix Yami – 18 pcs", "category": "Les Assortiments", "price": 120}, {"name": "Mix Sushi – 22 pcs", "category": "Les Assortiments", "price": 135}, {"name": "Mix Medium – 24 pcs", "category": "Les Assortiments", "price": 145}, {"name": "Mix Box – 33 pcs", "category": "Les Assortiments", "price": 260}, {"name": "Mix Lovers – 18 pcs", "category": "Les Assortiments", "price": 100}, {"name": "Fry Lovers – 28 pcs", "category": "Les Assortiments", "price": 165}, {"name": "Mix Party – 48 pcs", "category": "Les Assortiments", "price": 355}, {"name": "Maki box 24pcs", "category": "Les box", "price": 110}, {"name": "Aromaki box 24pcs", "category": "Les box", "price": 160}, {"name": "Crispy box 12pcs", "category": "Les box", "price": 90}, {"name": "California box 16pcs", "category": "Les box", "price": 110}, {"name": "Bateaux 1 – 60 pcs", "category": "Les Bateaux", "price": 460}, {"name": "Bateaux 2 – 80 pcs", "category": "Les Bateaux", "price": 660}, {"name": "Bateaux 3 – 100 pcs", "category": "Les Bateaux", "price": 860}];
+let cart = JSON.parse(localStorage.getItem('blinkCart') || '[]');
+const WHATSAPP = '212688741156';
+const categories = ['Tous', ...new Set(MENU.map(x=>x.category))];
+
+const $ = id => document.getElementById(id);
+function money(n) { return new Intl.NumberFormat('fr-FR').format(n); }
+function save() { localStorage.setItem('blinkCart', JSON.stringify(cart)); renderCart(); }
+function renderFilters() {
+  $('filters').innerHTML = categories.map((c,i)=>`<button class="filter ${i===0?'active':''}" data-cat="${c}">${c}</button>`).join('');
+  document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderMenu(b.dataset.cat);
+  });
+}
+function renderMenu(cat='Tous') {
+  const data = cat==='Tous' ? MENU : MENU.filter(x=>x.category===cat);
+  $('menuGrid').innerHTML = data.map((x,i)=>{
+    const qty = cart.find(y=>y.name===x.name)?.qty || 0;
+    return `<article class="item"><div><small>${x.category}</small><h3>${x.name}</h3><b>${money(x.price)} DH</b></div><button class="add" onclick="add('${x.name.replaceAll("'","\\'")}')">${qty?qty+' dans le panier':'+ Ajouter'}</button></article>`;
+  }).join('');
+}
+function add(name) {
+  const item=MENU.find(x=>x.name===name); if(!item)return;
+  const found=cart.find(x=>x.name===name); found?found.qty++:cart.push({...item,qty:1}); save(); renderMenu(document.querySelector('.filter.active')?.dataset.cat||'Tous');
+}
+function change(name,delta) {
+  const x=cart.find(y=>y.name===name); if(!x)return; x.qty+=delta; if(x.qty<=0)cart=cart.filter(y=>y.name!==name); save();
+}
+function renderCart() {
+  const count=cart.reduce((s,x)=>s+x.qty,0), total=cart.reduce((s,x)=>s+x.qty*x.price,0);
+  $('cartCount').textContent=count; $('cartTotal').textContent=money(total);
+  $('cartItems').innerHTML=cart.length?cart.map(x=>`<div class="cart-row"><div><b>${x.name}</b><small>${money(x.price)} DH × ${x.qty}</small></div><div class="qty"><button onclick="change('${x.name.replaceAll("'","\\'")}',-1)">−</button><span>${x.qty}</span><button onclick="change('${x.name.replaceAll("'","\\'")}',1)">+</button></div></div>`).join(''):`<div class="empty">Votre panier est vide.<br><button class="primary" onclick="openMenu()">Choisir des plats</button></div>`;
+}
+function openMenu() { $('menuModal').classList.add('show'); $('menuModal').setAttribute('aria-hidden','false'); renderFilters(); renderMenu(); }
+function closeMenu() { $('menuModal').classList.remove('show'); }
+function openCart() { $('cartDrawer').classList.add('show'); $('backdrop').classList.add('show'); renderCart(); }
+function closeCart() { $('cartDrawer').classList.remove('show'); $('backdrop').classList.remove('show'); }
+$('openYami').onclick=openMenu; $('openYami2').onclick=openMenu; $('restaurantLogo').onclick=openMenu;
+$('closeMenu').onclick=closeMenu; $('cartBtn').onclick=openCart; $('closeCart').onclick=closeCart; $('backdrop').onclick=closeCart;
+$('sendOrder').onclick=()=>{
+  if(!cart.length) return alert('Votre panier est vide.');
+  const total=cart.reduce((s,x)=>s+x.qty*x.price,0);
+  const lines=cart.map(x=>`• ${x.name} × ${x.qty} = ${x.qty*x.price} DH`).join('%0A');
+  const msg=`Bonjour Blink 👋%0AJe souhaite commander chez Yami Yami Sushi :%0A%0A${lines}%0A%0ATotal : ${total} DH%0A%0AMerci de confirmer ma commande.`;
+  window.open(`https://wa.me/${WHATSAPP}?text=${msg}`,'_blank');
+};
+renderCart();
+</script>
+</body>
+</html>
